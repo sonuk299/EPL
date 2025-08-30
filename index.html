@@ -119,16 +119,73 @@
             background-color: rgba(26, 32, 44, 0.7);
             z-index: -1;
         }
+
+        .party-pop {
+            animation: pop 0.5s ease-out forwards;
+        }
+
+        @keyframes pop {
+            0% { transform: scale(0); opacity: 0; }
+            50% { transform: scale(1.2); opacity: 1; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .confetti {
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            background-color: #ffeb3b;
+            animation: confetti-fall 2s ease-out forwards;
+            opacity: 0;
+            z-index: 10;
+        }
+
+        @keyframes confetti-fall {
+            0% { transform: translateY(0) rotateZ(0deg) scale(0); opacity: 1; }
+            100% { transform: translateY(-500px) rotateZ(720deg) scale(1); opacity: 0; }
+        }
+
+        .balloon {
+            position: absolute;
+            width: 30px;
+            height: 40px;
+            border-radius: 50%;
+            opacity: 0;
+            animation: balloon-float 3s ease-out forwards;
+            z-index: 10;
+        }
+
+        @keyframes balloon-float {
+            0% { transform: translateY(0) scale(0); opacity: 1; }
+            100% { transform: translateY(-700px) scale(1); opacity: 0; }
+        }
         
+        .ribbon {
+            position: absolute;
+            width: 2px;
+            height: 20px;
+            background-color: white;
+            animation: ribbon-fall 2s ease-out forwards;
+            opacity: 0;
+            z-index: 10;
+        }
+        
+        @keyframes ribbon-fall {
+            0% { transform: translateY(0) rotate(0deg) scale(0); opacity: 1; }
+            100% { transform: translateY(-500px) rotate(360deg) scale(1); opacity: 0; }
+        }
+
     </style>
 </head>
 <body>
     <div id="background-image-container" class="background-image"></div>
     <div id="background-overlay" class="background-overlay"></div>
+    <div id="party-container" class="fixed inset-0 z-20 pointer-events-none"></div>
+
 
     <div id="loading-message">Loading players...</div>
 
-    <div id="auction-slide" class="glass-card rounded-2xl p-8 max-w-md w-full mx-4 flex flex-col items-center text-center hidden">
+    <div id="auction-slide" class="glass-card rounded-2xl p-8 max-w-md w-full mx-4 flex flex-col items-center text-center hidden" style="height: 90vh;">
         <!-- Player Photo Section -->
         <div class="w-48 h-48 rounded-full bg-gray-700 flex items-center justify-center overflow-hidden border-4 border-yellow-400 mb-6 shadow-lg transition-transform duration-500 ease-in-out hover:scale-105">
             <img id="player-photo" src="https://placehold.co/192x192/2d3748/ffffff?text=Player" alt="Player Photo" class="w-full h-full object-cover">
@@ -139,6 +196,31 @@
             <h1 id="player-name" class="text-4xl font-extrabold text-white mb-2 tracking-wide">Player Name</h1>
             <h2 id="player-position" class="text-xl text-yellow-400 font-semibold mb-2">Position</h2>
             <p id="player-batch" class="text-sm text-gray-400 uppercase tracking-widest font-medium">Batch</p>
+            <div id="sold-info" class="text-white text-lg mt-4 font-bold hidden">
+                <span id="sold-status" class="text-green-500 party-pop">SOLD</span>
+            </div>
+            <p id="unsold-status" class="text-red-500 text-lg mt-4 font-bold hidden">UNSOLD</p>
+        </div>
+        
+        <!-- Action Buttons and Input -->
+        <div class="mt-8 flex flex-col items-center w-full">
+            <div class="flex items-center space-x-2 mb-4">
+                <label for="sell-price" class="text-white font-medium">Sell Price:</label>
+                <input type="number" id="sell-price" class="w-24 p-2 rounded-lg bg-gray-800 text-white border border-gray-600 focus:outline-none focus:ring-2 focus:ring-yellow-500" placeholder="0" min="0">
+            </div>
+            <button id="sell-button" class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-6 rounded-full transition-all duration-300 transform hover:scale-105 focus:outline-none">
+                Mark as Sold
+            </button>
+        </div>
+    </div>
+
+    <!-- Custom Modal/Message Box -->
+    <div id="custom-alert" class="hidden fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center z-50">
+        <div class="bg-gray-800 p-6 rounded-lg shadow-xl max-w-sm w-full">
+            <p id="alert-message" class="text-white text-center mb-4"></p>
+            <button id="alert-close-btn" class="w-full bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2 px-4 rounded-lg">
+                OK
+            </button>
         </div>
     </div>
 
@@ -148,27 +230,100 @@
         let isAnimating = false;
 
         const backgroundImageContainer = document.getElementById('background-image-container');
+        const soldInfo = document.getElementById('sold-info');
+        const unsoldStatus = document.getElementById('unsold-status');
+        const sellPriceInput = document.getElementById('sell-price');
+        const sellButton = document.getElementById('sell-button');
+        const slide = document.getElementById('auction-slide');
+        const customAlert = document.getElementById('custom-alert');
+        const alertMessage = document.getElementById('alert-message');
+        const alertCloseBtn = document.getElementById('alert-close-btn');
+        const partyContainer = document.getElementById('party-container');
+
+        // Function to show custom alert message
+        function showAlert(message) {
+            alertMessage.textContent = message;
+            customAlert.classList.remove('hidden');
+        }
+
+        // Function to trigger the party animation
+        function partyAnimation() {
+            const colors = ['#ff4b4b', '#f783ac', '#ffeb3b', '#64ffda', '#2196f3'];
+            const cardRect = slide.getBoundingClientRect();
+            
+            // Function to generate a random number within a range
+            const getRandom = (min, max) => Math.random() * (max - min) + min;
+
+            // Create confetti
+            for (let i = 0; i < 200; i++) {
+                const confetti = document.createElement('div');
+                confetti.className = 'confetti';
+                confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                
+                // Position confetti relative to the card's center
+                const x = getRandom(-cardRect.width / 2, cardRect.width / 2);
+                const y = getRandom(-cardRect.height / 2, cardRect.height / 2);
+                const rotation = getRandom(0, 360);
+                
+                confetti.style.left = `${cardRect.left + cardRect.width / 2 + x}px`;
+                confetti.style.top = `${cardRect.top + cardRect.height / 2 + y}px`;
+                
+                partyContainer.appendChild(confetti);
+
+                setTimeout(() => {
+                    confetti.style.transform = `translateY(${getRandom(-100, -500)}px) translateX(${getRandom(-200, 200)}px) rotate(${rotation}deg)`;
+                    confetti.style.opacity = 0;
+                }, 10);
+            }
+            
+            // Add ribbons
+            for (let i = 0; i < 50; i++) {
+                const ribbon = document.createElement('div');
+                ribbon.className = 'ribbon';
+                ribbon.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                
+                const x = getRandom(-cardRect.width / 2, cardRect.width / 2);
+                const y = getRandom(-cardRect.height / 2, cardRect.height / 2);
+                const rotation = getRandom(0, 360);
+
+                ribbon.style.left = `${cardRect.left + cardRect.width / 2 + x}px`;
+                ribbon.style.top = `${cardRect.top + cardRect.height / 2 + y}px`;
+                
+                partyContainer.appendChild(ribbon);
+
+                setTimeout(() => {
+                    ribbon.style.transform = `translateY(${getRandom(-100, -600)}px) translateX(${getRandom(-250, 250)}px) rotate(${rotation}deg)`;
+                    ribbon.style.opacity = 0;
+                }, 10);
+            }
+
+            // Clean up elements after animation
+            setTimeout(() => {
+                partyContainer.innerHTML = '';
+            }, 2000);
+        }
 
         // Function to update the auction slide content with a dynamic animation
         function updateSlide(player, direction = 'next') {
-            if (isAnimating) return;
-            isAnimating = true;
+            
+            if (direction === 'next' || direction === 'prev') {
+                if (isAnimating) return;
+                isAnimating = true;
 
-            const slide = document.getElementById('auction-slide');
+                slide.classList.remove('animate-next', 'animate-prev');
+                void slide.offsetWidth; // Trigger reflow to restart animation
 
-            slide.classList.remove('animate-next', 'animate-prev');
-            void slide.offsetWidth; // Trigger reflow to restart animation
+                if (direction === 'next') {
+                    slide.classList.add('animate-next');
+                } else {
+                    slide.classList.add('animate-prev');
+                }
 
-            if (direction === 'next') {
-                slide.classList.add('animate-next');
-            } else {
-                slide.classList.add('animate-prev');
+                slide.addEventListener('animationend', () => {
+                    isAnimating = false;
+                }, { once: true });
             }
-
-            slide.addEventListener('animationend', () => {
-                isAnimating = false;
-            }, { once: true });
-
+            
             document.getElementById('player-photo').src = player.photo;
             document.getElementById('player-name').textContent = player.name;
             document.getElementById('player-position').textContent = player.position;
@@ -181,6 +336,25 @@
             document.getElementById('player-photo').onerror = function() {
                 this.src = "https://placehold.co/192x192/2d3748/ffffff?text=Photo+Error";
             };
+
+            // Update sold status and display
+            if (player.isSold) {
+                soldInfo.classList.remove('hidden');
+                unsoldStatus.classList.add('hidden');
+                sellButton.textContent = "Unsell Player";
+                sellButton.classList.remove('bg-green-500', 'hover:bg-green-600');
+                sellButton.classList.add('bg-red-500', 'hover:bg-red-600');
+                sellPriceInput.value = player.sellingPrice;
+                sellPriceInput.disabled = true;
+            } else {
+                soldInfo.classList.add('hidden');
+                unsoldStatus.classList.remove('hidden');
+                sellButton.textContent = "Mark as Sold";
+                sellButton.classList.remove('bg-red-500', 'hover:bg-red-600');
+                sellButton.classList.add('bg-green-500', 'hover:bg-green-600');
+                sellPriceInput.value = '';
+                sellPriceInput.disabled = false;
+            }
         }
 
         // Function to fetch and parse the CSV data
@@ -209,7 +383,9 @@
                         name: values[1] ? values[1].trim() : "Unknown",
                         position: values[5] ? values[5].trim() : "Unknown",
                         batch: values[3] ? values[3].trim() : "Unknown",
-                        photo: imageUrl
+                        photo: imageUrl,
+                        isSold: false,
+                        sellingPrice: 0
                     };
                 });
                 
@@ -227,6 +403,32 @@
                 document.getElementById('loading-message').textContent = 'Failed to load player data.';
             }
         }
+
+
+        // Event listener for the "Mark as Sold" button
+        sellButton.addEventListener('click', () => {
+            const currentPlayer = players[currentPlayerIndex];
+            if (currentPlayer.isSold) {
+                // Revert sold status
+                currentPlayer.isSold = false;
+                currentPlayer.sellingPrice = 0;
+            } else {
+                const price = parseInt(sellPriceInput.value, 10);
+                if (isNaN(price) || price <= 0) {
+                    showAlert('Please enter a valid selling price.');
+                    return;
+                }
+                currentPlayer.isSold = true;
+                currentPlayer.sellingPrice = price;
+                partyAnimation();
+            }
+            updateSlide(currentPlayer, 'none'); // Do not animate the card
+        });
+
+        // Event listener for custom alert close button
+        alertCloseBtn.addEventListener('click', () => {
+            customAlert.classList.add('hidden');
+        });
 
         // Event listeners for keyboard arrows
         document.addEventListener('keydown', (event) => {
