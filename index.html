@@ -4,12 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Football Auction Slide</title>
+    <!-- Use Tailwind CSS for a clean, responsive design -->
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap');
         body {
             font-family: 'Inter', sans-serif;
-            background: #1a202c;
+            background-color: #1a202c;
             background-size: cover;
             background-position: center center;
             background-attachment: fixed;
@@ -18,7 +19,6 @@
             align-items: center;
             min-height: 100vh;
             overflow: hidden; /* Prevent overflow during animation */
-            transition: background-image 0.5s ease-in-out;
         }
         .action-button {
             padding: 0.75rem 1.5rem;
@@ -96,20 +96,42 @@
             animation: slideInPrev 0.5s ease-out forwards;
         }
 
-        /* New background image and blur styles */
-        .body-background {
-            background-image: linear-gradient(rgba(26, 32, 44, 0.7), rgba(26, 32, 44, 0.7)), var(--bg-image);
+        .background-image {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-size: cover;
+            background-position: center;
+            filter: blur(8px);
+            transform: scale(1.1);
+            z-index: -1;
+            transition: background-image 0.5s ease-in-out;
         }
 
+        .background-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(26, 32, 44, 0.7);
+            z-index: -1;
+        }
+        
     </style>
 </head>
 <body>
+    <div id="background-image-container" class="background-image"></div>
+    <div id="background-overlay" class="background-overlay"></div>
+
     <div id="loading-message">Loading players...</div>
 
-    <div id="auction-slide" class="glass-card rounded-2xl p-8 max-w-sm w-full mx-4 flex flex-col items-center text-center hidden">
+    <div id="auction-slide" class="glass-card rounded-2xl p-8 max-w-md w-full mx-4 flex flex-col items-center text-center hidden">
         <!-- Player Photo Section -->
-        <div class="w-40 h-40 rounded-full bg-gray-700 flex items-center justify-center overflow-hidden border-4 border-yellow-400 mb-6 shadow-lg transition-transform duration-500 ease-in-out hover:scale-105">
-            <img id="player-photo" src="https://placehold.co/160x160/2d3748/ffffff?text=Player" alt="Player Photo" class="w-full h-full object-cover">
+        <div class="w-48 h-48 rounded-full bg-gray-700 flex items-center justify-center overflow-hidden border-4 border-yellow-400 mb-6 shadow-lg transition-transform duration-500 ease-in-out hover:scale-105">
+            <img id="player-photo" src="https://placehold.co/192x192/2d3748/ffffff?text=Player" alt="Player Photo" class="w-full h-full object-cover">
         </div>
 
         <!-- Player Details Section -->
@@ -124,6 +146,8 @@
         let players = [];
         let currentPlayerIndex = 0;
         let isAnimating = false;
+
+        const backgroundImageContainer = document.getElementById('background-image-container');
 
         // Function to update the auction slide content with a dynamic animation
         function updateSlide(player, direction = 'next') {
@@ -151,11 +175,11 @@
             document.getElementById('player-batch').textContent = player.batch;
             
             // Update the background image
-            document.body.style.setProperty('--bg-image', `url('${player.photo}')`);
+            backgroundImageContainer.style.backgroundImage = `url('${player.photo}')`;
 
             // Add a fallback for broken image links
             document.getElementById('player-photo').onerror = function() {
-                this.src = "https://placehold.co/160x160/2d3748/ffffff?text=Photo+Error";
+                this.src = "https://placehold.co/192x192/2d3748/ffffff?text=Photo+Error";
             };
         }
 
