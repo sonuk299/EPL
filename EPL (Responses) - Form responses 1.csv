@@ -1,4 +1,4 @@
-Timestamp,NAME ?,CONTACT NUMBER ?,BATCH ?,IMAGE ?,PLAYING POSITION ?
+Timestamp,NAME,CONTACT_NUMBER,BATCH,IMAGE,PLAYING_POSITION
 26/08/2025 11:08:59,Gaurav Kumar Singh ,6201844976,2k23,https://drive.google.com/open?id=10AvcT5xVS09y7ydAjeXfVyUFVqft_934,DEFENDER
 26/08/2025 11:48:56,Ankit kumar mishra,8434557684,2k23,https://drive.google.com/open?id=1rSFqeFChVmy0GKEfewlJpgjym8ARXXlx,GOALKEEPER
 26/08/2025 11:52:08,Krishna kumar roy,8579057980,2k24,https://drive.google.com/open?id=1LhCVX6fssLnFWlJoQUGK94WcHZyUpWQu,DEFENDER
@@ -45,4 +45,5 @@ Timestamp,NAME ?,CONTACT NUMBER ?,BATCH ?,IMAGE ?,PLAYING POSITION ?
 30/08/2025 15:39:01,Aman kumar ,8002907810,2k24,https://drive.google.com/open?id=11rCfuOBIACMWT2r5wADdOx5rN_OCqgKo,DEFENDER
 30/08/2025 15:39:45,Divyanshu Kumar ,8709996823,2k24,https://drive.google.com/open?id=1F_h3K5pJSfDLye2JxJn9T6vl-jtX-qlb,MIDFIELDER
 30/08/2025 16:04:05,Nikhil kumar,8789426964,2k23,https://drive.google.com/open?id=1KO0b334hZB6lkm7RduEBO8uj3y3T38nl,GOALKEEPER
+
 30/08/2025 17:03:30,Abhishek kumar ,6207456036,2k22 sir,https://drive.google.com/open?id=1W6aAeKENmfT9z1miJ-HcN3mNQ2NW4g3m,FORWARD
